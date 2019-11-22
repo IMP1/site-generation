@@ -1,0 +1,11 @@
+[source]
+branch = "content"
+folder = "."
+
+[target]
+branch = "master"
+folder = "."
+
+[generation]
+use_git_branches = true
+
