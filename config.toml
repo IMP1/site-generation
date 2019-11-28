@@ -1,6 +1,6 @@
 [source]
 branch = "content"
-path = "foo"
+path = "."
 
 [target]
 branch = "master"
