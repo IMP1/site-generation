@@ -15,3 +15,6 @@ The tool itself resides in the `site_generation/` folder.
 
 
 
+# Credits
+
+  * TOML Parser: https://github.com/emancu/toml-rb
