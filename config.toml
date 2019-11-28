@@ -1,10 +1,10 @@
 [source]
 branch = "content"
-folder = "."
+path = "foo"
 
 [target]
 branch = "master"
-folder = "."
+path = "."
 
 [generation]
 use_git_branches = true
