@@ -24,6 +24,9 @@ end
 class Generator
 
     def initialize(*args)
+        # TODO:
+        # What if the source is in a git branch, but the target isn't (or vice versa)?
+        # This should be handled gracefully
         @source_root = args.shift || Dir.pwd
         @settings = Settings.new(@source_root)
         @use_git = @settings.get_setting("generation.use_git_branches")
@@ -69,7 +72,6 @@ class Generator
         Dir.chdir(@source_root) do
             `git checkout #{@target_branch} --quiet` if @use_git
             Dir.chdir(@target_path) do
-                puts filename
                 File.open(filename, 'w') do |file|
                     file.write(contents)
                     file.write("\n")
