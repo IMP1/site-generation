@@ -5,7 +5,7 @@ class Settings
 
     def initialize(path)
         @global_config_settings = TomlRB.load_file(__dir__ + '/config.toml')
-        @local_config_settings = {}
+        @local_config_settings = {"source" => {"path" => "foo"}}
     end
 
     def get_setting(key_path)
@@ -29,8 +29,10 @@ class Generator
         @use_git = @settings.get_setting("generation.use_git_branches")
         if @use_git
             @source_branch = @settings.get_setting("source.branch")
+            @target_branch = @settings.get_setting("target.branch")
         end
         @source_path = @settings.get_setting("source.path")
+        @target_path = @settings.get_setting("target.path")
         @whitelist = @settings.get_setting("generation.whitelist")
         @blacklist = @settings.get_setting("generation.blacklist")
     end
@@ -50,15 +52,40 @@ class Generator
                     if filename.end_with? '.rml'
                         rml_content = File.read(filename)
                         html_content = RMLParser.new(rml_content, filename).parse
+                        create_output_content(filename.gsub(".rml", ".html"), html_content)
                         puts "hooray"
                     else
                     end
                 end
             end
+            save_output_content
             if @use_git
                 `git checkout #{current_branch} --quiet`
             end
         end
+    end
+
+    def create_output_content(filename, contents)
+        Dir.chdir(@source_root) do
+            `git checkout #{@target_branch} --quiet` if @use_git
+            Dir.chdir(@target_path) do
+                puts filename
+                File.open(filename, 'w') do |file|
+                    file.write(contents)
+                    file.write("\n")
+                end
+            end
+            `git checkout #{@source_branch} --quiet` if @use_git
+        end
+    end
+
+    def save_output_content
+        return unless @use_git
+        commit_message = "Generate static content" # TODO: allow for custom message and custom message format
+        `git checkout #{@target_branch} --quiet` 
+        `git add . --quiet`
+        `git commit -m "#{commit_message}" --quiet`
+        `git checkout #{@source_branch} --quiet`
     end
 
 end
