@@ -81,11 +81,11 @@ class RMLParser
     def fix_formatting
         # TODO: there seems to be a problem with lots of tags on one line fucking up
         #       the formatting/indenting.
-        string_copy = @string
+        string_copy = @string.dup
         opening_tags = []
         void_tags = []
         loop do
-            tag_name = string_copy[/<([\w\-]+).*?>.*?<\/\1>/m, 1]
+            tag_name = string_copy[/<([\w\-]+)(?:\s.*)?>.*?<\/\1>/m, 1]
             # TODO: include void tags. 
             # void_tag_name = string_copy[/<([\w\-]+).*?\/?/m, 1]
             # check that void tag name is not the same as the tag name
@@ -94,7 +94,7 @@ class RMLParser
             break if tag_name.nil?
             i = string_copy.index("<"+tag_name) + tag_name.size
             string_copy = string_copy[i..-1]
-            opening_tags.push tag_name if !['html'].include? tag_name
+            opening_tags.push tag_name
         end
         closing_tags = []
 
@@ -105,18 +105,26 @@ class RMLParser
         depth = 0
         lines = lines.map.with_index do |line, line_number|
             padding = " " * (depth * 4)
-            if opening_tags.size > 0 && line.include?("<#{opening_tags.first}")
-                tag_name = opening_tags.delete_at(0)
-                depth += 1
-                closing_tags.push(tag_name)
-            elsif void_tags.size > 0 and line.include?("<#{void_tags.first}")
-                tag_name = void_tags.delete_at(0)
-                puts "THIS SHOULDN'T ACTUALLY HAPPEN YET"
+            loop do
+                if opening_tags.size > 0 && line.include?("<#{opening_tags.first}")
+                    tag_name = opening_tags.delete_at(0)
+                    depth += 1
+                    closing_tags.push(tag_name)
+                elsif void_tags.size > 0 and line.include?("<#{void_tags.first}")
+                    tag_name = void_tags.delete_at(0)
+                    puts "THIS SHOULDN'T ACTUALLY HAPPEN YET"
+                else
+                    break
+                end
             end
-            if closing_tags.size > 0 && line.include?("</#{closing_tags.last}")
-                closing_tags.pop
-                depth -= 1
-                padding = " " * (depth * 4)
+            loop do
+                if closing_tags.size > 0 && line.include?("</#{closing_tags.last}")
+                    closing_tags.pop
+                    depth -= 1
+                    padding = " " * (depth * 4)
+                else
+                    break
+                end
             end
             if line.count('<') > line.count('>') and !tag_name.nil?
                 unfinished_tags.push({ :tag => tag_name, :line => line_number })
