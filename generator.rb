@@ -5,7 +5,7 @@ class Settings
 
     def initialize(path)
         @global_config_settings = TomlRB.load_file(__dir__ + '/config.toml')
-        @local_config_settings = {"source" => {"path" => "foo"}}
+        @local_config_settings = {"source" => {"path" => "public"}}
     end
 
     def get_setting(key_path)
@@ -40,54 +40,50 @@ class Generator
         @blacklist = @settings.get_setting("generation.blacklist")
     end
 
+    def git(command, *args)
+        return unless @use_git
+        `git #{command} #{args.join(" ")}`
+    end
+
     def generate
         current_dir = Dir.pwd
         Dir.chdir(@source_root) do
             if @use_git
                 branch = `git branch`
                 current_branch = branch.match(/\* (\w+)/)[1]
-                `git checkout #{@source_branch} --quiet`
+                git("checkout", @source_branch, "--quiet")
             end
             Dir.chdir(@source_path) do
                 Dir["**/*"].each do |filename|
                     # Filter out using whitelist and blacklist
-                    puts filename
                     if filename.end_with? '.rml'
                         rml_content = File.read(filename)
                         html_content = RMLParser.new(rml_content, filename).parse
                         create_output_content(filename.gsub(".rml", ".html"), html_content)
-                        puts "hooray"
                     else
                     end
                 end
             end
-            save_output_content
             if @use_git
-                `git checkout #{current_branch} --quiet`
+                git("checkout", current_branch, "--quiet")
             end
         end
     end
 
     def create_output_content(filename, contents)
+        commit_message = "Add #{filename}" # TODO: allow for custom message and custom message format
         Dir.chdir(@source_root) do
-            `git checkout #{@target_branch} --quiet` if @use_git
+            git("checkout", @target_branch, "--quiet")
             Dir.chdir(@target_path) do
                 File.open(filename, 'w') do |file|
                     file.write(contents)
                     file.write("\n")
                 end
+                git("add", ".")
+                git("commit", "-m", commit_message, "--quiet")
             end
-            `git checkout #{@source_branch} --quiet` if @use_git
+            git("checkout", @source_branch, "--quiet")
         end
-    end
-
-    def save_output_content
-        return unless @use_git
-        commit_message = "Generate static content" # TODO: allow for custom message and custom message format
-        `git checkout #{@target_branch} --quiet` 
-        `git add . --quiet`
-        `git commit -m "#{commit_message}" --quiet`
-        `git checkout #{@source_branch} --quiet`
     end
 
 end
