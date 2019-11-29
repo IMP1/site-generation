@@ -11,10 +11,10 @@ class Settings
     def get_setting(key_path)
         keys = key_path.split(".")
         table = @local_config_settings
-        value = keys[0..-2].inject(table) { |memo, key| memo.fetch(key, {}) }[keys.last]
+        value = table.dig(*keys)
         if value.nil?
             table = @global_config_settings
-            value = keys[0..-2].inject(table) { |memo, key| memo.fetch(key, {}) }[keys.last]
+            value = value = table.dig(*keys)
         end
         return value
     end
