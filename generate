@@ -1,0 +1,112 @@
+#!/usr/bin/env ruby
+
+require_relative 'exit_code'
+require_relative 'usage'
+
+code = handle_help_and_version
+exit(code) unless code.nil?
+
+require_relative 'generator'
+require_relative 'git_helpers'
+
+#---
+# Parse Source directory
+#---
+if ARGV.count {|a| a == "--source" } > 1
+    puts "Multiple source arguments were included (--source). Exiting."
+    exit(ExitCode::USAGE)
+end
+
+source_directory = "."
+
+source_directory_index = ARGV.index("--source")
+if source_directory_index
+    ARGV.delete_at(source_directory_index)
+    source_directory = ARGV.delete_at(source_directory_index)
+    if source_directory.nil?
+        puts "A filepath must be supplied as an input file."
+        exit(ExitCode::USAGE)
+    end
+    if !File.exists?(source_directory)
+        puts "Could not find source directory '#{source_directory}'. Exiting."
+        exit(ExitCode::NOINPUT)
+    end
+end
+
+#---
+# Parse Source branch
+#---
+if ARGV.count {|a| a == "--source-branch" } > 1
+    puts "Multiple source branch arguments were included (--source-branch). Exiting."
+    exit(ExitCode::USAGE)
+end
+
+source_branch = nil
+
+source_branch_index = ARGV.index("--source-branch")
+if source_branch_index
+    ARGV.delete_at(source_branch_index)
+    source_branch = ARGV.delete_at(source_branch_index)
+    if source_branch.nil?
+        puts "A filepath must be supplied as an input file."
+        exit(ExitCode::USAGE)
+    end
+    # TODO: check for git repo
+    if !Git.branch?(source_branch)
+        puts "Could not find source branch '#{source_branch}'. Exiting."
+        exit(ExitCode::NOINPUT)
+    end
+end
+
+#---
+# Parse Target directory
+#---
+if ARGV.count {|a| a == "--target" } > 1
+    puts "Multiple target arguments were included (--target). Exiting."
+    exit(ExitCode::USAGE)
+end
+
+target_directory = "."
+
+target_directory_index = ARGV.index("--target")
+if target_directory_index
+    ARGV.delete_at(target_directory_index)
+    target_directory = ARGV.delete_at(target_directory_index)
+    if target_directory.nil?
+        puts "A filepath must be supplied as an input file."
+        exit(ExitCode::USAGE)
+    end
+    if !File.exists?(target_directory)
+        puts "Could not find source directory '#{target_directory}'. Exiting."
+        exit(ExitCode::NOINPUT)
+    end
+end
+
+
+#---
+# Parse Target branch
+#---
+if ARGV.count {|a| a == "--target-branch" } > 1
+    puts "Multiple target branch arguments were included (--target-branch). Exiting."
+    exit(ExitCode::USAGE)
+end
+
+target_branch = nil
+
+target_branch_index = ARGV.index("--target-branch")
+if target_branch_index
+    ARGV.delete_at(target_branch_index)
+    target_branch = ARGV.delete_at(target_branch_index)
+    if target_branch.nil?
+        puts "A filepath must be supplied as an input file."
+        exit(ExitCode::USAGE)
+    end
+    # TODO: check for git repo
+    if !Git.branch?(target_branch)
+        puts "Could not find target branch '#{target_branch}'. Exiting."
+        exit(ExitCode::NOINPUT)
+    end
+end
+
+g = Generator.new(source_directory, target_directory, source_branch, target_branch)
+g.generate
