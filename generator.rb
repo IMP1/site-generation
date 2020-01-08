@@ -30,40 +30,53 @@ class Generator
     def process_source_content
         Dir["**/*"].each do |filename|
             # Filter out using whitelist and blacklist
-            if filename.end_with? '.rml'
-                rml_content = File.read(filename)
-                html_content = RMLParser.new(rml_content, filename).parse
-                create_output_content(filename.gsub(".rml", ".html"), html_content)
-            else
-            end
+            next if File.directory?(File.join(@source_path, filename))
+            create_output_content(filename)
         end
     end
 
-    def create_output_content(filename, contents)
-        puts "Converting #{filename}"
+    def create_output_content(source_filename)
+        puts "Converting #{source_filename}"
         Dir.chdir(@target_path) do
             if @target_branch
-                commit_message = "Add #{filename}" # TODO: allow for custom message and custom message format
+                commit_message = "Add #{source_filename}" # TODO: allow for custom message and custom message format
                 Git.checkout(@target_branch) do
-                    create_output_file(filename, contents)
+                    create_output_file(source_filename)
                     Git.add(@target_path)
                     Git.commit(commit_message)
                 end
             else
-                create_output_file(filename, contents)
+                create_output_file(source_filename)
             end
         end
     end
 
-    def create_output_file(filename, contents)
-        puts "Creating output file #{filename}"
-        dirname = File.dirname(filename)
+    def create_output_file(source_filename)
+        target_filename = source_filename
+        if source_filename.end_with?(".rml")
+            target_filename = source_filename.gsub(".rml", ".html")
+        end
+        source_filepath = File.join(@source_path, source_filename)
+        target_filepath = File.join(@target_path, target_filename)
+        dirname = File.dirname(target_filepath)
         unless File.directory?(dirname)
             FileUtils.mkdir_p(dirname)
         end
-        File.open(filename, 'w') do |file|
-            file.write(contents)
-            file.write("\n")
+
+        puts "Creating output file #{target_filename}"
+        if source_filename.end_with? '.rml'
+            html_content = ""
+            Dir.chdir(@source_path) do
+                rml_content = File.read(source_filepath)
+                html_content = RMLParser.new(rml_content, source_filename).parse
+            end
+            
+            File.open(target_filepath, 'w') do |file|
+                file.write(html_content)
+                file.write("\n")
+            end
+        else
+            FileUtils.copy(source_filepath, target_filepath)
         end
     end
 
