@@ -1,4 +1,6 @@
 require 'toml-rb'
+require 'fileutils'
+
 require_relative 'rml'
 require_relative 'git_helpers'
 
@@ -6,7 +8,7 @@ class Generator
 
     def initialize(source_dir, target_dir, source_branch, target_branch)
         @source_path = source_dir
-        @target_path = source_dir
+        @target_path = target_dir
         @source_branch = source_branch
         @target_branch = target_branch
         @whitelist = []
@@ -38,6 +40,7 @@ class Generator
     end
 
     def create_output_content(filename, contents)
+        puts "Converting #{filename}"
         Dir.chdir(@target_path) do
             if @target_branch
                 commit_message = "Add #{filename}" # TODO: allow for custom message and custom message format
@@ -52,12 +55,15 @@ class Generator
         end
     end
 
-    def create_output_file
-        Dir.chdir(@target_path) do
-            File.open(filename, 'w') do |file|
-                file.write(contents)
-                file.write("\n")
-            end
+    def create_output_file(filename, contents)
+        puts "Creating output file #{filename}"
+        dirname = File.dirname(filename)
+        unless File.directory?(dirname)
+            FileUtils.mkdir_p(dirname)
+        end
+        File.open(filename, 'w') do |file|
+            file.write(contents)
+            file.write("\n")
         end
     end
 
