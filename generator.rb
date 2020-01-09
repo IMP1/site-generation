@@ -23,13 +23,19 @@ class Generator
         path = File.join(@source_path, GENERATOR_IGNORE_FILENAME)
         if File.exists?(path)
             File.readlines(path).each do |line|
-                @ignore_patterns.push(ignore_pattern_to_regex(line))
+                @ignore_patterns.push(ignore_pattern_to_regex(line.chomp))
             end
         end
+        exit(0) # TODO: remove
     end
 
     def ignore_pattern_to_regex(pattern)
-        return /#{pattern}/
+        pattern = pattern.gsub(".") { "\\." }
+        pattern = pattern.gsub("-") { "\\-" }
+        pattern = pattern.gsub("?") { "." }
+        pattern = pattern.gsub("*") { ".+" }
+        regex = /#{pattern}/
+        return regex
     end
 
     def generate
