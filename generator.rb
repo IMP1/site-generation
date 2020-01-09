@@ -54,11 +54,11 @@ class Generator
             filepath = File.join(@source_path, filename)
             next if File.directory?(filepath)
             if filename.end_with?(".rml")
-                puts "Converting #{source_filename}"
+                puts "Converting #{filename}"
                 rml_content = File.read(filepath)
                 content = RMLParser.new(rml_content, filename).parse
             else
-                puts "Copying #{source_filename}"
+                puts "Copying #{filename}"
                 File.open(filepath, 'rb') { |f| content = f.read }
             end
             create_output_content(filename, content)
