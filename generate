@@ -52,7 +52,7 @@ if source_branch_index
         exit(ExitCode::USAGE)
     end
     # TODO: check for git repo
-    if !Git.branch?(source_branch)
+    if !Git.branch?(source_branch, source_directory)
         puts "Could not find source branch '#{source_branch}'. Exiting."
         exit(ExitCode::NOINPUT)
     end
@@ -102,7 +102,7 @@ if target_branch_index
         exit(ExitCode::USAGE)
     end
     # TODO: check for git repo
-    if !Git.branch?(target_branch)
+    if !Git.branch?(target_branch, target_directory)
         puts "Could not find target branch '#{target_branch}'. Exiting."
         exit(ExitCode::NOINPUT)
     end
