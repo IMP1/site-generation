@@ -108,6 +108,6 @@ if target_branch_index
     end
 end
 
-puts "Generating content from #{source_directory} into #{target_directory}"
 g = Generator.new(source_directory, target_directory, source_branch, target_branch)
+puts "Generating content from #{source_directory} into #{target_directory}"
 g.generate
