@@ -1,5 +1,15 @@
 module Git
 
+    def self.any_unstaged?(repo_dir=nil)
+        if repo_dir
+            Dir.chdir(repo_dir) do
+                return any_unstaged?
+            end
+        end
+        changes = `git diff-index HEAD`
+        return !changes.empty?
+    end
+
     def self.branch?(branch, repo_dir=nil)
         if repo_dir
             Dir.chdir(repo_dir) do

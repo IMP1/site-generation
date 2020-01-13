@@ -52,6 +52,11 @@ class Generator
         log("Generating site...")
         Dir.chdir(@source_path) do
             if @source_branch
+                # TODO: Check to see if there are unstaged files and cancel if so.
+                if Git.any_unstaged?
+                    puts "There are changes in the repo. Generation cancelled."
+                    return
+                end
                 Git.checkout(@source_branch) do 
                     process_source_content 
                 end
