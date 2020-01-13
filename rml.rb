@@ -84,6 +84,7 @@ class RMLParser
         string_copy = @string.dup
         opening_tags = []
         void_tags = []
+        tag_name = nil
         loop do
             tag_name = string_copy[/<([\w\-]+)(?:\s.*)?>.*?<\/\1>/m, 1]
             # TODO: include void tags. 
