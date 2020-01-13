@@ -26,7 +26,6 @@ class Generator
                 @ignore_patterns.push(ignore_pattern_to_regex(line.chomp))
             end
         end
-        exit(0) # TODO: remove
     end
 
     def ignore_pattern_to_regex(pattern)
