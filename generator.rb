@@ -30,6 +30,10 @@ class Generator
         puts message
     end
 
+    def error(message)
+        puts message
+    end
+
     def create_ignore_list
         path = File.join(@source_path, GENERATOR_IGNORE_FILENAME)
         if File.exists?(path)
@@ -52,9 +56,8 @@ class Generator
         log("Generating site...")
         Dir.chdir(@source_path) do
             if @source_branch
-                # TODO: Check to see if there are unstaged files and cancel if so.
                 if Git.any_unstaged?
-                    puts "There are changes in the repo. Generation cancelled."
+                    error("There are changes in the repo. Generation cancelled.")
                     return
                 end
                 Git.checkout(@source_branch) do 
