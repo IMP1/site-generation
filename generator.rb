@@ -8,15 +8,26 @@ GENERATOR_IGNORE_FILENAME = ".genignore"
 
 class Generator
 
-    def initialize(source_dir, target_dir, source_branch, target_branch)
+    def initialize(source_dir, target_dir, source_branch, target_branch, options={})
         @source_path = source_dir
         @target_path = target_dir
         @source_branch = source_branch
         @target_branch = target_branch
         @ignore_patterns = []
+        @options = options
         create_ignore_list
         # TODO, have sync only be set to true if verbose flag is enabled
         $stdout.sync = true 
+    end
+
+    def log(message)
+        return if @options[:verbose]
+        puts message
+    end
+
+    def debug(message)
+        return if @options[:debug]
+        puts message
     end
 
     def create_ignore_list
@@ -38,6 +49,7 @@ class Generator
     end
 
     def generate
+        log("Generating site...")
         Dir.chdir(@source_path) do
             if @source_branch
                 Git.checkout(@source_branch) do 
@@ -47,23 +59,24 @@ class Generator
                 process_source_content
             end
         end
+        log("Completed generating site.")
     end
 
     def process_source_content
         Dir["**/*"].each do |filename|
             next if filename == GENERATOR_IGNORE_FILENAME
             if @ignore_patterns.any? { |pattern| pattern.match?(filename) }
-                puts "Ignoring #{filename} as it matches a pattern in #{GENERATOR_IGNORE_FILENAME}."
+                debug("Ignoring #{filename} as it matches a pattern in #{GENERATOR_IGNORE_FILENAME}.")
                 next
             end
             filepath = File.join(@source_path, filename)
             next if File.directory?(filepath)
             if filename.end_with?(".rml")
-                puts "Converting #{filename}"
+                debug("Converting #{filename}")
                 rml_content = File.read(filepath)
                 content = RMLParser.new(rml_content, filename).parse
             else
-                puts "Copying #{filename}"
+                debug("Copying #{filename}")
                 File.open(filepath, 'rb') { |f| content = f.read }
             end
             create_output_content(filename, content)
@@ -97,7 +110,7 @@ class Generator
             FileUtils.mkdir_p(dirname)
         end
 
-        puts "Creating output file #{target_filename}"
+        debug("Creating output file #{target_filename}")
         if source_filename.end_with? '.rml'
             File.open(target_filepath, 'w') do |file|
                 file.write(content)

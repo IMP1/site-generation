@@ -108,6 +108,39 @@ if target_branch_index
     end
 end
 
-g = Generator.new(source_directory, target_directory, source_branch, target_branch)
+#---
+# Parse Verbose Flag
+#---
+if ARGV.count { |a| a == "--verbose" } > 1
+    puts "Multiple target branch arguments were included (--verbose). Exiting."
+    exit(ExitCode::USAGE)
+end
+verbose = false
+verbose_index = ARGV.index("--verbose")
+if verbose_index
+    ARGV.delete_at(verbose_index)
+    verbose = true
+end
+
+#---
+# Parse Debug Flag
+#---
+if ARGV.count { |a| a == "--debug" } > 1
+    puts "Multiple target branch arguments were included (--debug). Exiting."
+    exit(ExitCode::USAGE)
+end
+debug = false
+debug_index = ARGV.index("--debug")
+if debug_index
+    ARGV.delete_at(debug_index)
+    debug = true
+end
+
+options = {
+    verbose: verbose,
+    debug: debug,
+}
+
+g = Generator.new(source_directory, target_directory, source_branch, target_branch, options)
 puts "Generating content from #{source_directory} into #{target_directory}"
 g.generate
