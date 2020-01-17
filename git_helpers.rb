@@ -42,6 +42,15 @@ module Git
         checkout(previous_branch)
     end
 
+    def self.current_index
+        return `git rev-parse HEAD`
+    end
+
+    def self.changed_files(last_index)
+        p "git diff #{last_index} --name-only"
+        return `git diff #{last_index} --name-only`.lines.select { |line| !line.chomp.empty? }.map { |line| line.chomp }
+    end
+
     def self.add(path)
         `git add #{path}`
     end

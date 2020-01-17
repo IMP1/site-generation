@@ -5,6 +5,7 @@ require_relative 'rml'
 require_relative 'git_helpers'
 
 GENERATOR_IGNORE_FILENAME = ".genignore"
+LAST_GENERATION_FILENAME = ".genlast"
 
 class Generator
 
@@ -71,8 +72,18 @@ class Generator
     end
 
     def process_source_content
-        Dir["**/*"].each do |filename|
-            next if filename == GENERATOR_IGNORE_FILENAME
+        files = Dir["**/*"]
+        last_index = File.read(LAST_GENERATION_FILENAME).chomp if File.exists?(LAST_GENERATION_FILENAME)
+        if last_index and !last_index.empty?
+            files = Git.changed_files(last_index)
+        end
+        files -= [GENERATOR_IGNORE_FILENAME, LAST_GENERATION_FILENAME]
+        if files.empty?
+            log("No files to generate.")
+            return
+        end
+        log("Generating #{files.size} files.")
+        files.each do |filename|
             if @ignore_patterns.any? { |pattern| pattern.match?(filename) }
                 debug("Ignoring #{filename} as it matches a pattern in #{GENERATOR_IGNORE_FILENAME}.")
                 next
@@ -89,6 +100,12 @@ class Generator
             end
             create_output_content(filename, content)
         end
+
+        File.open(LAST_GENERATION_FILENAME, 'w') do |file|
+            file.write(Git.current_index)
+        end
+        Git.add(LAST_GENERATION_FILENAME)
+        Git.commit("Update last generation index")
     end
 
     def create_output_content(source_filename, content)
