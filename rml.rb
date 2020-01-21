@@ -20,6 +20,9 @@ class RMLParser
         @string.scan(/<ruby include=.+?>/).each do |m|
             filename = m[/include="(.+?)"/, 1]
             args = m[/args="(.+?)"/, 1]
+            unless File.file?(filename)
+                raise "Could not find file to include: '#{filename}'. Working directory is #{Dir.pwd}"
+            end
             include_string = File.read(filename)
             if include_string.nil?
 

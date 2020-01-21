@@ -47,7 +47,6 @@ module Git
     end
 
     def self.changed_files(last_index)
-        p "git diff #{last_index} --name-only"
         return `git diff #{last_index} --name-only`.lines.select { |line| !line.chomp.empty? }.map { |line| line.chomp }
     end
 

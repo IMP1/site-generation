@@ -54,7 +54,6 @@ class Generator
     end
 
     def generate
-        log("Generating site...")
         Dir.chdir(@source_path) do
             if @source_branch
                 if Git.any_unstaged?
@@ -82,12 +81,16 @@ class Generator
             log("No files to generate.")
             return
         end
-        log("Generating #{files.size} files.")
-        files.each do |filename|
+        files.reject! do |filename| 
             if @ignore_patterns.any? { |pattern| pattern.match?(filename) }
                 debug("Ignoring #{filename} as it matches a pattern in #{GENERATOR_IGNORE_FILENAME}.")
-                next
+                true
+            else
+                false
             end
+        end
+        log("Generating #{files.size} files.")
+        files.each do |filename|
             filepath = File.join(@source_path, filename)
             next if File.directory?(filepath)
             if filename.end_with?(".rml")
