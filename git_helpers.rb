@@ -54,8 +54,9 @@ module Git
         `git add #{path}`
     end
 
-    def self.commit(message)
-        `git commit -m "#{message}" --quiet`
+    def self.commit(*messages)
+        messages.map! { |msg| "-m #{msg}" }.join(" ")
+        `git commit --quiet #{messages}` 
     end
 
 end
