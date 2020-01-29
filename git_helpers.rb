@@ -55,8 +55,8 @@ module Git
     end
 
     def self.commit(*messages)
-        messages.map! { |msg| "-m #{msg}" }.join(" ")
-        `git commit --quiet #{messages}` 
+        msg = messages.map { |msg| "-m \"#{msg}\"" }.join(" ")
+        `git commit #{msg} --quiet`
     end
 
 end
