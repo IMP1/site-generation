@@ -1,4 +1,3 @@
-require 'toml-rb'
 require 'fileutils'
 
 require_relative 'rml'
