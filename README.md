@@ -13,6 +13,8 @@ You can also specify git branches to be sources and targets (and this works with
 
 You can include a `.genignore` file whit will stop any files that match any of its filepath patterns from being generated.
 
+`./generate --source /c/Users/huwtaylor/Projects/mir/wiki --source-branch content --target /c/Users/huwtaylor/Projects/mir/wiki --target-branch master`
+
 ## Supported Content Filetypes
 
 All files that are not in the `.genignore` will be either copied, or converted, even images and binary files.
@@ -20,5 +22,10 @@ All files that are not in the `.genignore` will be either copied, or converted, 
 The filetypes that will be converted at the moment are `.rml`. 
 
 **RML** is a markup language, which is a superset of HTML, adding in some special tags.
-For more details, see [the RML readme](https://github.com/IMP1/site-generation/blob/master/RML.md)
+For more details, see [The RML Readme](https://github.com/IMP1/site-generation/blob/master/RML.md).
 
+## Examples
+
+I'm currently using this utility for [The Wiki](https://github.com/IMP1/mir-wiki) I'm making for my worldbuilding.
+
+## Credits
