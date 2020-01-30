@@ -1,4 +1,7 @@
+require_relative 'html_elements'
+
 class RMLParser
+    include HtmlElementGenerator
 
     SEPARATOR = " "
 
