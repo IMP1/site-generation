@@ -19,18 +19,14 @@ RML is a markup language, which is a superset of HTML, adding in some special ta
 
 ### Templating
 
-RML allows for including other files. This can allow for DRY principles, where any content that is included in multiple pages can be included wherever necessary. This is done with the following code:
-
-```
-<ruby include="page_layout.rml">
-```
+RML allows for including other files. This can allow for DRY principles, where any content that is included in multiple pages can be included wherever necessary. This is done using `<ruby include="page_layout.rml">`.
 
 RML also allows for blocks to be defined. They are started with `<ruby block-begin="blockname>` and ended with `<ruby block-end="blockname>`. The first instance of a block is the location that the final block inner content will end up within the document. You can also include the content of previous blocks using `<ruby block-super>`.
 
 This allows for templating by using the following small example as a template, and then a specific page.
 
 `layout.rml`
-```
+```html
 <!DOCTYPE html>
 <html>
     <head>
@@ -53,7 +49,7 @@ This allows for templating by using the following small example as a template, a
 ```
 
 `page_1.rml`
-```
+```html
 <ruby include="page_layout.rml"> <!-- This defines the 'main' block previously in the document.  -->
 <ruby block-begin="main"> <!-- And this contains the final content of the main block, unless another file overwrites it. -->
     <p>Some really fun content!</p>
