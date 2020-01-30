@@ -47,24 +47,29 @@ class RMLParser
     def handle_blocks
         blocks = {}
 
+        # Find all blocks and store their contents in `blocks`
         @string.scan(/<ruby block\-begin=".+?">/m).each do |m|
             block_name = m[19..-3]
             blocks[block_name] ||= []
-            i = (0..blocks[block_name].size).inject(-1) { |memo, i| @string.index(m, memo + 1) }
-            j = @string.index(/<ruby block\-end="#{block_name}">/m, i)
-            k = @string.index(">", j + 1)
-            blocks[block_name].push( @string[i+m.size...j] )
+            block_start_index = (0..blocks[block_name].size).inject(-1) { |memo, i| @string.index(m, memo + 1) }
+            block_end_index = @string.index(/<ruby block\-end="#{block_name}">/m, block_start_index)
+            block_inner = @string[block_start_index+m.size...block_end_index]
+            blocks[block_name].push( block_inner )
         end
 
+        # Resolve any block-super calls
         blocks.each do |block_name, block_levels|
             block_levels.each_with_index do |block, i|
                 block_levels[i].gsub!(/<ruby block\-super>/, block_levels[i-1])
             end
         end
 
+        # Replace first instance of block with final evaluation of the block content
         blocks.keys.each do |block_name|
             @string.sub!(/<ruby block\-begin="#{block_name}">.+?<ruby block\-end="#{block_name}">/m, blocks[block_name].last)
         end
+
+        # Remove all remaining blocks
         @string.gsub!(/<ruby block\-begin="(.+?)">.+?<ruby block\-end="\1">/m, "")
         return @string
     end
