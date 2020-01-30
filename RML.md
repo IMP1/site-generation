@@ -52,3 +52,19 @@ You can specify for layout pages (or any files) to not be generated into html fi
 You can run arbitrary ruby code inside `<ruby>` and `</ruby>` tags. 
 The `p` function has been redefined to output its argument to the generated HTML file.
 
+## HTML Convenience Functions
+
+RML defines functions for all the HTML elements.
+
+```html
+<ruby>
+    p DIV([
+        P([
+            "This is a first",
+            EM("paragraph"),
+            "that includes",
+            A("a link", href: "https://google.co.uk")
+        ], class: "highlighted underline")
+    ])
+</ruby>
+```
