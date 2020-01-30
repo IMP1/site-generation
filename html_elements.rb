@@ -10,7 +10,7 @@ module HtmlElementGenerator
             open_tag = "<#{[element_name, *attrs].join(" ")}>\n"
             close_tag = "\n</#{element_name}>"
 
-            return open_tag + contents.join("\n") + close_tag
+            return open_tag + contents.join(" ") + close_tag
         end
         define_method(element, &block)
     end
@@ -30,6 +30,7 @@ module HtmlElementGenerator
     end
 
     %W[
+        HTML HEAD BODY
         ARTICLE SECTION DIV SPAN HEADER FOOTER MAIN ASIDE NAV
         H1 H2 H3 H4 H5 H6 EM STRONG S SUP SUB MARK I B
         INS DEL KBD SAMP CODE BLOCKQUOTE DFN ABBR PRE ADDRESS
