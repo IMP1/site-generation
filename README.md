@@ -13,52 +13,12 @@ You can also specify git branches to be sources and targets (and this works with
 
 You can include a `.genignore` file whit will stop any files that match any of its filepath patterns from being generated.
 
-## RML
+## Supported Content Filetypes
 
-RML is a markup language, which is a superset of HTML, adding in some special tags.
+All files that are not in the `.genignore` will be either copied, or converted, even images and binary files.
 
-### Templating
+The filetypes that will be converted at the moment are `.rml`. 
 
-RML allows for including other files. This can allow for DRY principles, where any content that is included in multiple pages can be included wherever necessary. This is done using `<ruby include="page_layout.rml">`.
-
-RML also allows for blocks to be defined. They are started with `<ruby block-begin="blockname>` and ended with `<ruby block-end="blockname>`. The first instance of a block is the location that the final block inner content will end up within the document. You can also include the content of previous blocks using `<ruby block-super>`.
-
-This allows for templating by using the following small example as a template, and then a specific page.
-
-`layout.rml`
-```html
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Foo Bar</title>
-    </head>
-    <body>
-        <header>
-            <!-- Template Content -->        
-        </header>
-        <main>
-            <ruby block-begin="main">
-            <ruby block-end="main">
-        </main>
-        <footer>
-            <!-- More Template Content -->
-        </footer>
-    </body>
-</html>
-```
-
-`page_1.rml`
-```html
-<ruby include="page_layout.rml"> <!-- This defines the 'main' block previously in the document.  -->
-<ruby block-begin="main"> <!-- And this contains the final content of the main block, unless another file overwrites it. -->
-    <p>Some really fun content!</p>
-<ruby block-end="main">
-```
-
-You can specify for layout pages (or any files) to not be generated into html files by using the `.genignore` file.
-
-### Dynamism
-
-You can run arbitrary ruby code inside `<ruby>` and `</ruby>` tags. The `p` function has been redefined to output its argument to the generated HTML file.
+**RML** is a markup language, which is a superset of HTML, adding in some special tags.
+For more details, see [the RML readme](https://github.com/IMP1/site-generation/blob/master/RML.md)
 
