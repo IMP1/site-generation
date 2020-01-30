@@ -3,10 +3,7 @@ module HtmlElementGenerator
     def self.define_element(element)
         element_name = element.to_s.downcase
         block = lambda do |contents, properties={}|
-
-            if contents.is_a?(String)
-                contents = [contents]
-            end
+            contents = [contents] if contents.is_a?(String)
 
             attrs = properties.to_a.map { |key, value| "#{key.to_s}=\"#{value}\"" }
 
@@ -25,18 +22,31 @@ module HtmlElementGenerator
             attrs = properties.to_a.map { |key, value| "#{key.to_s}=\"#{value}\"" }
 
             tag = "<#{[element_name, *attrs].join(" ")}>"
-            
+
             return tag
 
         end
         define_method(element, block)
     end
 
-    [*"H1".."H6", *%w[ARTICLE SECTION DIV A P UL OL LI DL DT DD STRONG EM]].each do |elem|
+    %W[
+        ARTICLE SECTION DIV SPAN HEADER FOOTER MAIN ASIDE NAV
+        H1 H2 H3 H4 H5 H6 EM STRONG S SUP SUB MARK I B
+        INS DEL KBD SAMP CODE BLOCKQUOTE DFN ABBR PRE ADDRESS
+        OUTPUT TIME
+        OL UL LI DL DT DD TABLE TBODY TFOOT THEAD TR TD TH
+        FORM BUTTON A TEXTAREA SELECT OPTION OPTGROUP
+        VIDEO CANVAS OBJECT IFRAME AUDIO SCRIPT
+        PROGRESS MENU MAP VAR 
+        DETAILS SUMMARY FIGURE FIGCAPTION CAPTION CITE LABEL
+    ].each do |elem|
         define_element(elem.to_sym)
     end
 
-    ["IMG", "BR", "META"].each do |elem|
+    %w[
+        AREA BASE BR WBR COL COMMAND EMBED HR IMG INPUT 
+        KEYGEN LINK META PARAM SOURCE TRACK
+    ].each do |elem|
         define_void_element(elem.to_sym)
     end
 
