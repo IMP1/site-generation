@@ -1,3 +1,5 @@
+require 'ostruct'
+
 module PageServer
 
     @@dir = __dir__
@@ -8,6 +10,23 @@ module PageServer
 
     def dir
         return @@dir
+    end
+
+    def files(folder)
+        return Dir[dir + "/" + folder + "/**/*"]
+    end
+
+    def posts
+        return files("posts").map do |filename|
+            post = OpenStruct.new
+            post.content = File.read(filename)
+            lines = post.content.lines
+            post.title = lines.shift.chomp
+            post.authors = lines.shift.chomp.split(NoteParser::AUTHOR_SEPARATOR)
+            post.dates = lines.shift.chomp.split(NoteParser::DATE_SEPARATOR)
+            post.tags = lines.shift.chomp.split(NoteParser::TAG_SEPARATOR)
+            post
+        end
     end
 
 end
