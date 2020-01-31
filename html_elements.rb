@@ -8,7 +8,7 @@ module HtmlElementGenerator
             attrs = properties.to_a.map { |key, value| "#{key.to_s}=\"#{value}\"" }
 
             open_tag = "<#{[element_name, *attrs].join(" ")}>\n"
-            close_tag = "\n</#{element_name}>"
+            close_tag = "\n</#{element_name}>\n"
 
             return open_tag + contents.join(" ") + close_tag
         end
