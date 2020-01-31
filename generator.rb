@@ -1,7 +1,8 @@
 require 'fileutils'
 
-require_relative 'rml'
 require_relative 'git_helpers'
+require_relative 'rml'
+require_relative 'note'
 
 GENERATOR_IGNORE_FILENAME = ".genignore"
 LAST_GENERATION_FILENAME = ".genlast"
@@ -16,8 +17,9 @@ class Generator
         @ignore_patterns = []
         @options = options
         create_ignore_list
+        PageServer.set_dir(@source_path)
         # TODO, have sync only be set to true if verbose flag is enabled
-        $stdout.sync = true 
+        $stdout.sync = true
     end
 
     def log(message, no_newline=false)
@@ -99,6 +101,10 @@ class Generator
                 debug("\rConverting #{filename}", true)
                 rml_content = File.read(filepath)
                 content = RMLParser.new(rml_content, filename).parse
+            elsif filename.end_with?(".note")
+                debug("\rConverting #{filename}", true)
+                note_content = File.read(filepath)
+                content = NoteParser.new(note_content, filename).parse
             else
                 debug("\rCopying #{filename}", true)
                 File.open(filepath, 'rb') { |f| content = f.read }
@@ -119,12 +125,13 @@ class Generator
                 process_target_content(file_data)
             end
         end
-        File.open(LAST_GENERATION_FILENAME, 'w') do |file|
-            file.write(Git.current_index)
+        if @source_branch
+            File.open(LAST_GENERATION_FILENAME, 'w') do |file|
+                file.write(Git.current_index)
+            end
+            Git.add(LAST_GENERATION_FILENAME)
+            Git.commit("Update last generation index")
         end
-        Git.add(LAST_GENERATION_FILENAME)
-        Git.commit("Update last generation index")
-                   
     end
 
     def process_target_content(file_data)
@@ -138,6 +145,8 @@ class Generator
         target_filename = source_filename
         if source_filename.end_with?(".rml")
             target_filename = source_filename.gsub(/\.rml/, ".html")
+        elsif source_filename.end_with?(".note")
+            target_filename = source_filename.gsub(/\.note/, ".html")
         end
         target_filepath = File.join(@target_path, target_filename)
 
@@ -147,7 +156,7 @@ class Generator
         end
 
         debug("\rCreating output file #{target_filename}", true)
-        if source_filename.end_with?(".rml")
+        if source_filename.end_with?(".rml") || source_filename.end_with?(".note")
             File.open(target_filepath, 'w') do |file|
                 file.write(content)
                 file.write("\n")
