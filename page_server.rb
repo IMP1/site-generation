@@ -25,7 +25,7 @@ module PageServer
             post.authors = lines.shift.chomp.split(NoteParser::AUTHOR_SEPARATOR)
             post.dates = lines.shift.chomp.split(NoteParser::DATE_SEPARATOR)
             post.tags = lines.shift.chomp.split(NoteParser::TAG_SEPARATOR)
-            post.link = File.basename(filename) + ".html"
+            post.link = File.basename(filename, ".*") + ".html"
             post
         end
     end
