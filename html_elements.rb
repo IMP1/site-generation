@@ -7,8 +7,11 @@ module HtmlElementGenerator
 
             attrs = properties.to_a.map { |key, value| "#{key.to_s}=\"#{value}\"" }
 
-            open_tag = "<#{[element_name, *attrs].join(" ")}>\n"
-            close_tag = "\n</#{element_name}>\n"
+            open_tag = "<#{[element_name, *attrs].join(" ")}>"
+            open_tag += "\n" if contents.first.start_with?("<")
+            close_tag = ""
+            close_tag += "\n" if contents.first.start_with?("<")
+            close_tag += "</#{element_name}>\n"
 
             return open_tag + contents.join(" ") + close_tag
         end
@@ -18,18 +21,16 @@ module HtmlElementGenerator
     def self.define_void_element(element)
         element_name = element.to_s.downcase
         block = lambda do |properties={}|
-
             attrs = properties.to_a.map { |key, value| "#{key.to_s}=\"#{value}\"" }
 
-            tag = "<#{[element_name, *attrs].join(" ")}>"
+            tag = "<#{[element_name, *attrs].join(" ")}>\n"
 
             return tag
-
         end
-        define_method(element, block)
+        define_method(element, &block)
     end
 
-    %W[
+    %i[
         HTML HEAD BODY
         ARTICLE SECTION DIV SPAN HEADER FOOTER MAIN ASIDE NAV
         H1 H2 H3 H4 H5 H6 EM STRONG S SUP SUB MARK I B
@@ -41,14 +42,14 @@ module HtmlElementGenerator
         PROGRESS MENU MAP VAR 
         DETAILS SUMMARY FIGURE FIGCAPTION CAPTION CITE LABEL
     ].each do |elem|
-        define_element(elem.to_sym)
+        define_element(elem)
     end
 
-    %w[
+    %i[
         AREA BASE BR WBR COL COMMAND EMBED HR IMG INPUT 
         KEYGEN LINK META PARAM SOURCE TRACK
     ].each do |elem|
-        define_void_element(elem.to_sym)
+        define_void_element(elem)
     end
 
 end
