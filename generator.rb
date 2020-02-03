@@ -73,6 +73,25 @@ class Generator
         log("Completed generating site.")
     end
 
+    def convert_file_contents(filename, filepath)
+        if filename.end_with?(".rml")
+            debug("Converting #{filename}")
+            rml_content = File.read(filepath)
+            content = RMLParser.new(rml_content, filename).parse
+        elsif filename.end_with?(".note")
+            debug("Converting #{filename}")
+            note_content = File.read(filepath)
+            content = NoteParser.new(note_content, filename).parse
+        else
+            debug("Copying #{filename}")
+            File.open(filepath, 'rb') { |f| content = f.read }
+        end
+        return content
+    rescue StandardError => e
+        error(e.full_message)
+        return ""
+    end
+
     def process_source_content
         files = Dir["**/*"]
         last_index = File.read(LAST_GENERATION_FILENAME).chomp if File.exists?(LAST_GENERATION_FILENAME)
@@ -97,18 +116,7 @@ class Generator
         files.each do |filename|
             filepath = File.join(@source_path, filename)
             next if File.directory?(filepath)
-            if filename.end_with?(".rml")
-                debug("\rConverting #{filename}", true)
-                rml_content = File.read(filepath)
-                content = RMLParser.new(rml_content, filename).parse
-            elsif filename.end_with?(".note")
-                debug("\rConverting #{filename}", true)
-                note_content = File.read(filepath)
-                content = NoteParser.new(note_content, filename).parse
-            else
-                debug("\rCopying #{filename}", true)
-                File.open(filepath, 'rb') { |f| content = f.read }
-            end
+            content = convert_file_contents(filename, filepath)
             debug("")
             file_data[filename] = content
         end
