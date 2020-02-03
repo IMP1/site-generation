@@ -146,7 +146,6 @@ class Generator
         file_data.each do |filename, content|
             create_output_file(filename, content)
         end
-        debug("")
     end
 
     def create_output_file(source_filename, content)
