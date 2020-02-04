@@ -24,13 +24,13 @@ class Generator
 
     def log(message, no_newline=false)
         return if @options[:verbose]
-        print message
+        print message.chomp
         print "\n" unless no_newline
     end
 
     def debug(message, no_newline=false)
         return if @options[:debug]
-        print message
+        print message.chomp
         print "\n" unless no_newline
     end
 
@@ -117,7 +117,6 @@ class Generator
             filepath = File.join(@source_path, filename)
             next if File.directory?(filepath)
             content = convert_file_contents(filename, filepath)
-            debug("")
             file_data[filename] = content
         end
         Dir.chdir(@target_path) do
@@ -162,7 +161,7 @@ class Generator
             FileUtils.mkdir_p(dirname)
         end
 
-        debug("\rCreating output file #{target_filename}", true)
+        debug("Creating output file #{target_filename}")
         if source_filename.end_with?(".rml") || source_filename.end_with?(".note")
             File.open(target_filepath, 'w') do |file|
                 file.write(content)
