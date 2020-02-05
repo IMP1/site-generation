@@ -16,6 +16,11 @@ class Generator
         @target_branch = target_branch
         @ignore_patterns = []
         @options = options
+
+        @options[:verbose] = true
+        @options[:debug] = true
+        @options[:confirm_deletions] = true
+
         create_ignore_list
         PageServer.set_dir(@source_path)
         # TODO, have sync only be set to true if verbose flag is enabled
@@ -23,13 +28,18 @@ class Generator
     end
 
     def log(message, no_newline=false)
-        return if @options[:verbose]
+        return unless @options[:verbose]
         print message.chomp
         print "\n" unless no_newline
     end
 
     def debug(message, no_newline=false)
-        return if @options[:debug]
+        return unless @options[:debug]
+        print message.chomp
+        print "\n" unless no_newline
+    end
+
+    def warn(message, no_newline=false)
         print message.chomp
         print "\n" unless no_newline
     end
@@ -73,26 +83,6 @@ class Generator
         log("Completed generating site.")
     end
 
-    def convert_file_contents(filename, filepath)
-        if filename.end_with?(".rml")
-            debug("Converting #{filename}")
-            rml_content = File.read(filepath)
-            content = RMLParser.new(rml_content, filename).parse
-        elsif filename.end_with?(".note")
-            debug("Converting #{filename}")
-            note_content = File.read(filepath)
-            content = NoteParser.new(note_content, filename).parse
-        else
-            debug("Copying #{filename}")
-            File.open(filepath, 'rb') { |f| content = f.read }
-        end
-        return content
-    rescue StandardError => e
-        error(e.full_message)
-        error("\twhen processing #{filename}")
-        return ""
-    end
-
     def process_source_content
         files = Dir["**/*"]
         last_index = File.read(LAST_GENERATION_FILENAME).chomp if File.exists?(LAST_GENERATION_FILENAME)
@@ -117,7 +107,12 @@ class Generator
         files.each do |filename|
             filepath = File.join(@source_path, filename)
             next if File.directory?(filepath)
-            content = convert_file_contents(filename, filepath)
+            if File.file?(filepath)
+                content = convert_file_contents(filename, filepath)
+            else
+                # Removing a file
+                content = nil                
+            end
             file_data[filename] = content
         end
         Dir.chdir(@target_path) do
@@ -142,9 +137,33 @@ class Generator
         end
     end
 
+    def convert_file_contents(filename, filepath)
+        if filename.end_with?(".rml")
+            debug("Converting #{filename}")
+            rml_content = File.read(filepath)
+            content = RMLParser.new(rml_content, filename).parse
+        elsif filename.end_with?(".note")
+            debug("Converting #{filename}")
+            note_content = File.read(filepath)
+            content = NoteParser.new(note_content, filename).parse
+        else
+            debug("Copying #{filename}")
+            File.open(filepath, 'rb') { |f| content = f.read }
+        end
+        return content
+    rescue StandardError => e
+        error(e.full_message)
+        error("\twhen processing #{filename}")
+        return ""
+    end
+
     def process_target_content(file_data)
         file_data.each do |filename, content|
-            create_output_file(filename, content)
+            if content.nil?
+                remove_output_file(filename)
+            else
+                create_output_file(filename, content)
+            end
         end
     end
 
@@ -173,6 +192,28 @@ class Generator
                 file.write(content)
             end
         end
+    end
+
+    def remove_output_file(source_filename)
+        target_filename = source_filename
+        if source_filename.end_with?(".rml")
+            target_filename = source_filename.gsub(/\.rml/, ".html")
+        elsif source_filename.end_with?(".note")
+            target_filename = source_filename.gsub(/\.note/, ".html")
+        end
+        target_filepath = File.join(@target_path, target_filename)
+
+        if @options[:confirm_deletions]
+            warn("#{source_filename} was removed from source content.")
+            warn("Shall #{target_filename} also be removed? Y/N")
+            confirmation = gets.chomp
+            if confirmation.downcase[0] != "y"
+                return
+            end
+        end
+
+        debug("Deleting output file #{target_filename}")
+        File.delete(target_filepath)
     end
 
 end
