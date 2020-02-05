@@ -8,7 +8,7 @@ module HtmlFormatter
         void_tags = []
         tag_name = nil
         loop do
-            tag_name = string_copy[/<([\w\-]+)(?:\s.*)?>.*?<\/\1>/m, 1]
+            tag_name = string_copy[/<([a-zA-Z][\w\-]*)(?:\s.*)?>.*?<\/\1>/m, 1]
             # TODO: include void tags. 
             # void_tag_name = string_copy[/<([\w\-]+).*?\/?/m, 1]
             # check that void tag name is not the same as the tag name
@@ -49,7 +49,7 @@ module HtmlFormatter
                     break
                 end
             end
-            if line.count('<') > line.count('>') and !tag_name.nil?
+            if line.scan(/<(?!\!)/).count > line.scan(/(?<!\-)>/).count and !tag_name.nil?
                 unfinished_tags.push({ :tag => tag_name, :line => line_number })
             end
             padding + line # return the line with its corrected padding
@@ -58,6 +58,10 @@ module HtmlFormatter
             i = a[:tag].length + 1
             line_number = a[:line] + 1
             loop do
+                if lines[line_number].nil?
+                    puts line_number
+                    puts lines.inspect
+                end
                 lines[line_number] = (" " * i) + lines[line_number][3..-1]
                 break if lines[line_number].include? ">"
                 line_number += 1
