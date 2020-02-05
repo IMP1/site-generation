@@ -89,6 +89,7 @@ class Generator
         return content
     rescue StandardError => e
         error(e.full_message)
+        error("\twhen processing #{filename}")
         return ""
     end
 
