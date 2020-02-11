@@ -1,5 +1,6 @@
 require 'fileutils'
 
+require_relative 'console_colours'
 require_relative 'git_helpers'
 require_relative 'rml'
 require_relative 'note'
@@ -40,12 +41,13 @@ class Generator
     end
 
     def warn(message, no_newline=false)
+        print ConsoleStyle::FG_RED + ConsoleStyle::BOLD + message.chomp + ConsoleStyle::RESET
         print message.chomp
         print "\n" unless no_newline
     end
 
     def error(message)
-        puts message
+        puts ConsoleStyle::FG_RED + ConsoleStyle::BOLD + message.chomp + ConsoleStyle::RESET
     end
 
     def create_ignore_list
