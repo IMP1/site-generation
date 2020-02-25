@@ -4,13 +4,17 @@ module HtmlElementGenerator
         element_name = element.to_s.downcase
         block = lambda do |contents, properties={}|
             contents = [contents] if contents.is_a?(String)
+            contents ||= []
 
             attrs = properties.to_a.map { |key, value| "#{key.to_s}=\"#{value}\"" }
 
             open_tag = "<#{[element_name, *attrs].join(" ")}>"
-            open_tag += "\n" if contents.first.start_with?("<")
             close_tag = ""
-            close_tag += "\n" if contents.first.start_with?("<")
+
+            unless contents.empty?
+                open_tag += "\n" if contents.first.start_with?("<")
+                close_tag += "\n" if contents.first.start_with?("<")
+            end
             close_tag += "</#{element_name}>\n"
 
             return open_tag + contents.join(" ") + close_tag
