@@ -18,9 +18,10 @@ class Generator
         @ignore_patterns = []
         @options = options
 
-        @options[:verbose] = true
-        @options[:debug] = true
-        @options[:confirm_deletions] = true
+        # @options[:verbose] = true
+        # @options[:debug] = true
+        # @options[:confirm_deletions] = true
+        # @options[:generate_all] = false
 
         create_ignore_list
         PageServer.set_dir(@source_path)
@@ -87,7 +88,7 @@ class Generator
     def process_source_content
         files = Dir["**/*"]
         last_index = File.read(LAST_GENERATION_FILENAME).chomp if File.exists?(LAST_GENERATION_FILENAME)
-        if last_index and !last_index.empty?
+        if last_index and !last_index.empty? and !@options[:generate_all]
             files = Git.changed_files(last_index)
         end
         files -= [GENERATOR_IGNORE_FILENAME, LAST_GENERATION_FILENAME]

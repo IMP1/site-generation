@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'date'
 require_relative 'exit_code'
 require_relative 'usage'
 
@@ -109,6 +110,20 @@ if target_branch_index
 end
 
 #---
+# Parse Regenerate-All Flag
+#---
+if ARGV.count { |a| a == "--generate-all" } > 1
+    puts "Multiple target branch arguments were included (--generate-all). Exiting."
+    exit(ExitCode::USAGE)
+end
+generate_all = false
+generate_all_index = ARGV.index("--generate-all")
+if generate_all_index
+    ARGV.delete_at(generate_all_index)
+    generate_all = true
+end
+
+#---
 # Parse Verbose Flag
 #---
 if ARGV.count { |a| a == "--verbose" } > 1
@@ -139,8 +154,10 @@ end
 options = {
     verbose: verbose,
     debug: debug,
+    confirm_deletions: true,
+    generate_all: generate_all,
 }
 
 g = Generator.new(source_directory, target_directory, source_branch, target_branch, options)
-puts "Generating content from #{source_directory} into #{target_directory}"
+puts "Generating content from #{source_directory} into #{target_directory}" if verbose
 g.generate
